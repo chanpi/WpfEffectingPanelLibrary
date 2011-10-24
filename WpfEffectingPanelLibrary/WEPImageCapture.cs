@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+// WindowsフォームのPanel上のすべてのコントロールを含め、キャプチャするクラス
 namespace WpfEffectingPanelLibrary
 {
     public class WEPImageCapture
@@ -15,7 +16,7 @@ namespace WpfEffectingPanelLibrary
         {
         }
 
-        public Bitmap GetPreviousCapturedImage(Panel panel, string filePath, Boolean firstTime)
+        public Bitmap GetCapturedImage(Panel panel, string filePath, Boolean firstTime)
         {
             Rectangle rectangle;
             Bitmap bitmap = null;

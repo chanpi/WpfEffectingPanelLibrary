@@ -26,12 +26,14 @@ namespace WpfEffectingPanelLibrary
     {
         public enum EffectType { Fading, Rotating, L2RSliding, Random, None };
 
+        private WEPImageCapture imageCapture = null;
         private ArrayList effectList = null;
         private Random random = null;
 
         public EffectingPanel()
         {
             InitializeComponent();
+            imageCapture = new WEPImageCapture();
         }
 
         public void Transition(ref System.Windows.Forms.Panel current, ref System.Windows.Forms.Panel next)
@@ -39,28 +41,32 @@ namespace WpfEffectingPanelLibrary
             Transition(ref current, ref next, EffectType.Random);
         }
 
+        // 1. Windows FormのPanelを受取り、Panelの画像をキャプチャしてBitmapオブジェクトを取得
+        // 2. BitmapオブジェクトをWPFで扱えるようにBitmapSourceオブジェクトに変換
+        // 3. BitmapSourceでエフェクトを実行
+        // 4. EffectingPanelをHiddenにする
         public void Transition(ref System.Windows.Forms.Panel current, ref System.Windows.Forms.Panel next, EffectType type)
         {
-            WEPImageCapture imageCapture = new WEPImageCapture();
-
-            Bitmap currentBitmap = null;
-            Bitmap nextBitmap = null;
+            BitmapSource currentBitmapSource = null;
+            BitmapSource nextBitmapSource = null;
             EPDefaultEffect effect = null;
 
             try
             {
-                currentBitmap = imageCapture.GetPreviousCapturedImage(current, current.Name + ".bmp", false);    // 遷移前Panelをキャプチャ
-                nextBitmap = null;
+                currentBitmapSource = GetBitmapSource(current, false);      // 遷移前Panelをキャプチャ
 
                 string nextBitmapPath = next.Name + ".bmp";
 
                 if (System.IO.File.Exists(nextBitmapPath))
                 {
-                    nextBitmap = new Bitmap(nextBitmapPath);
+                    nextBitmapSource = new BitmapImage();       // BitmapSource（abstruct）とBitmapImageは継承関係にある
+                    ((BitmapImage)nextBitmapSource).BeginInit();
+                    ((BitmapImage)nextBitmapSource).UriSource = new Uri(next.Name, UriKind.RelativeOrAbsolute);
+                    ((BitmapImage)nextBitmapSource).EndInit();
                 }
                 else
                 {
-                    nextBitmap = imageCapture.GetPreviousCapturedImage(next, nextBitmapPath, true);              // 初回のみ
+                    nextBitmapSource = GetBitmapSource(next, true);         // 初回のみ
                 }
 
                 //this.BringToFront();
@@ -82,15 +88,15 @@ namespace WpfEffectingPanelLibrary
                     effect = effectList[(int)type] as EPDefaultEffect;
                 }
 
-                effect.DrawEffectImage(currentBitmap, nextBitmap, this);
+                effect.DrawEffectImage(currentBitmapSource, nextBitmapSource, this);
 
                 next.Visible = true;
                 next.Refresh();
 
                 this.Visibility = Visibility.Hidden;   // effect終わり
 
-                currentBitmap.Dispose();
-                nextBitmap.Dispose();
+                Console.WriteLine("*** Effect end ***");
+
             }
             catch (SystemException ex)
             {
@@ -98,32 +104,30 @@ namespace WpfEffectingPanelLibrary
             }
         }
 
-        //public void DrawEffectImage(System.Windows.Forms.Panel current, System.Windows.Forms.Panel next, EffectType type)
-        //{
-        //    WEPImageCapture imageCapture = new WEPImageCapture();
-        //    Bitmap currentBitmap = imageCapture.GetPreviousCapturedImage(current, current.Name + ".bmp", true);
-        //    BitmapSource currentBitmapSource = ToBitmapSource(currentBitmap);
+        public BitmapSource GetBitmapSource(System.Windows.Forms.Panel panel, Boolean firstTime)
+        {
+            Bitmap currentBitmap = imageCapture.GetCapturedImage(panel, panel.Name + ".bmp", firstTime);
+            BitmapSource currentBitmapSource = ToBitmapSource(currentBitmap);
+            currentBitmap.Dispose();
 
-        //    this.image1.Source = currentBitmapSource;
+            return currentBitmapSource;
+        }
 
-        //    currentBitmap.Dispose();
-        //}
+        [DllImport("gdi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool DeleteObject(IntPtr hObject);
 
-        //[DllImport("gdi32.dll")]
-        //[return: MarshalAs(UnmanagedType.Bool)]
-        //static extern bool DeleteObject(IntPtr hObject);
+        static BitmapSource ToBitmapSource(Bitmap bitmap)
+        {
+            IntPtr ptr = bitmap.GetHbitmap();
 
-        //static BitmapSource ToBitmapSource(Bitmap bitmap)
-        //{
-        //    IntPtr ptr = bitmap.GetHbitmap();
+            BitmapSource bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
+                ptr, IntPtr.Zero, Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
 
-        //    BitmapSource bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
-        //        ptr, IntPtr.Zero, Int32Rect.Empty,
-        //        BitmapSizeOptions.FromEmptyOptions());
+            DeleteObject(ptr);
 
-        //    DeleteObject(ptr);
-
-        //    return bitmapSource;
-        //}
+            return bitmapSource;
+        }
     }
 }
