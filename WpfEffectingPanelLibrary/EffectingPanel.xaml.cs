@@ -24,7 +24,7 @@ namespace WpfEffectingPanelLibrary
     /// </summary>
     public partial class EffectingPanel : UserControl
     {
-        public enum EffectType { Fading, Rotating, L2RSliding, Random, None };
+        public enum EffectType { Blur, DropShadow, /*Emboss, OuterGlow,*/ Random, None };
 
         private WEPImageCapture imageCapture = null;
         private ArrayList effectList = null;
@@ -33,7 +33,31 @@ namespace WpfEffectingPanelLibrary
         public EffectingPanel()
         {
             InitializeComponent();
+            
+            this.Visibility = Visibility.Visible;
+
+            // 画面キャプチャ専用クラス
             imageCapture = new WEPImageCapture();
+            // エフェクト効果を行うクラスのインスタンスを生成
+            CreateEffectInstances();
+
+            random = new Random();
+        }
+
+        private void CreateEffectInstances()
+        {
+            if (effectList != null)
+            {
+                effectList.RemoveRange(0, effectList.Count);
+            }
+            else
+            {
+                effectList = new ArrayList();
+            }
+
+            // TODO!!!!!!!!!!!!!!!!!!!
+            effectList.Add(new WEPBlurEffect());
+            effectList.Add(new WEPBlurEffect());
         }
 
         public void Transition(ref System.Windows.Forms.Panel current, ref System.Windows.Forms.Panel next)
@@ -49,7 +73,7 @@ namespace WpfEffectingPanelLibrary
         {
             BitmapSource currentBitmapSource = null;
             BitmapSource nextBitmapSource = null;
-            EPDefaultEffect effect = null;
+            WEPDefaultEffect effect = null;
 
             try
             {
@@ -59,7 +83,7 @@ namespace WpfEffectingPanelLibrary
 
                 if (System.IO.File.Exists(nextBitmapPath))
                 {
-                    nextBitmapSource = new BitmapImage();       // BitmapSource（abstruct）とBitmapImageは継承関係にある
+                    nextBitmapSource = new BitmapImage();                   // BitmapSource（abstruct）とBitmapImageは継承関係にある
                     ((BitmapImage)nextBitmapSource).BeginInit();
                     ((BitmapImage)nextBitmapSource).UriSource = new Uri(next.Name, UriKind.RelativeOrAbsolute);
                     ((BitmapImage)nextBitmapSource).EndInit();
@@ -69,9 +93,7 @@ namespace WpfEffectingPanelLibrary
                     nextBitmapSource = GetBitmapSource(next, true);         // 初回のみ
                 }
 
-                //this.BringToFront();
-
-                this.Visibility = Visibility.Visible;   // effectスタート
+                //this.Visibility = Visibility.Visible;                       // effectスタート
                 current.Visible = false;
 
                 if (type == EffectType.Random)
@@ -81,19 +103,21 @@ namespace WpfEffectingPanelLibrary
 
                 if (type == EffectType.None)
                 {
-                    effect = new EPDefaultEffect();
+                    effect = new WEPDefaultEffect();
                 }
                 else
                 {
-                    effect = effectList[(int)type] as EPDefaultEffect;
+                    effect = effectList[(int)type] as WEPDefaultEffect;
                 }
+
+                Console.WriteLine(type.ToString());
 
                 effect.DrawEffectImage(currentBitmapSource, nextBitmapSource, this);
 
                 next.Visible = true;
                 next.Refresh();
 
-                this.Visibility = Visibility.Hidden;   // effect終わり
+                //this.Visibility = Visibility.Hidden;                        // effect終わり
 
                 Console.WriteLine("*** Effect end ***");
 

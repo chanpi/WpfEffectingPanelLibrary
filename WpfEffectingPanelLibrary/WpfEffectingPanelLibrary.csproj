@@ -52,7 +52,9 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EPDefaultEffect.cs" />
+    <Compile Include="WEPDefaultEffect.cs" />
+    <Compile Include="WEPBlurEffect.cs" />
+    <Compile Include="WEPDropShadowEffect.cs" />
     <Compile Include="WEPImageCapture.cs" />
     <Page Include="EffectingPanel.xaml">
       <Generator>MSBuild:Compile</Generator>

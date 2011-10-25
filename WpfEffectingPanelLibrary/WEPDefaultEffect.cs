@@ -22,17 +22,17 @@ using System.Threading;
 
 namespace WpfEffectingPanelLibrary
 {
-    public class EPDefaultEffect
+    public class WEPDefaultEffect
     {
         public virtual void DrawEffectImage(BitmapSource current, BitmapSource next, EffectingPanel effectingPanel)
         {
-            // 現在の画像
-            effectingPanel.image1.Source = current;
+            //// 現在の画像
+            //effectingPanel.image1.Source = current;
 
-            Thread.Sleep(500);
+            //Thread.Sleep(500);
 
-            // 次の画像
-            effectingPanel.image1.Source = next;
+            //// 次の画像
+            //effectingPanel.image1.Source = next;
         }
     }
 }
