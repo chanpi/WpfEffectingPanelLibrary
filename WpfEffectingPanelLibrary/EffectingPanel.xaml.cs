@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -16,6 +17,7 @@ using System.Windows.Shapes;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
+using System.Windows.Threading;
 
 namespace WpfEffectingPanelLibrary
 {
@@ -30,6 +32,11 @@ namespace WpfEffectingPanelLibrary
         private ArrayList effectList = null;
         private Random random = null;
 
+        private Storyboard storyboard = null;
+        private DispatcherTimer effectTimer = null;
+
+        private System.Windows.Forms.Panel nextPanel = null;
+
         public EffectingPanel()
         {
             InitializeComponent();
@@ -40,8 +47,30 @@ namespace WpfEffectingPanelLibrary
             imageCapture = new WEPImageCapture();
             // エフェクト効果を行うクラスのインスタンスを生成
             CreateEffectInstances();
+            // エフェクトの時間を管理するタイマー
+            SetEffectTimer();
 
             random = new Random();
+        }
+
+        private void SetEffectTimer()
+        {
+            if (effectTimer == null)
+            {
+                effectTimer = new DispatcherTimer(DispatcherPriority.Normal);
+                effectTimer.Interval = new TimeSpan(0, 0, 2);
+                effectTimer.Tick += new EventHandler(effectTimer_Tick);
+            }
+        }
+
+        private void effectTimer_Tick(object sender, EventArgs e)
+        {
+            effectTimer.Stop();
+            if (nextPanel != null)
+            {
+                nextPanel.Visible = true;
+                nextPanel.Refresh();
+            }
         }
 
         private void CreateEffectInstances()
@@ -94,6 +123,7 @@ namespace WpfEffectingPanelLibrary
                 }
 
                 //this.Visibility = Visibility.Visible;                       // effectスタート
+                effectTimer.Start();
                 current.Visible = false;
 
                 if (type == EffectType.Random)
@@ -112,14 +142,21 @@ namespace WpfEffectingPanelLibrary
 
                 Console.WriteLine(type.ToString());
 
-                effect.DrawEffectImage(currentBitmapSource, nextBitmapSource, this);
+                ImageBrush currentImage = new ImageBrush(currentBitmapSource);
+                ImageBrush nextImage = new ImageBrush(nextBitmapSource);
+                canvas.Width = current.Width;
+                canvas.Height = current.Height;
+                //canvas.Background = currentImage;
 
-                next.Visible = true;
-                next.Refresh();
+                //effect.DrawEffectImage(currentBitmapSource, nextBitmapSource, this);
+
+                nextPanel = next;
+                canvasEffectSample(currentImage, nextImage);
+
+                //next.Visible = true;
+                //next.Refresh();
 
                 //this.Visibility = Visibility.Hidden;                        // effect終わり
-
-                Console.WriteLine("*** Effect end ***");
 
             }
             catch (SystemException ex)
@@ -152,6 +189,106 @@ namespace WpfEffectingPanelLibrary
             DeleteObject(ptr);
 
             return bitmapSource;
+        }
+
+        // TODO
+        private void canvas_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        //private void canvasEffectSample(ImageBrush currentImage, ImageBrush nextImage)
+        //{
+        //    if (storyboard == null)
+        //    {
+        //        storyboard = new Storyboard();
+        //        storyboard.Name = "Fading";
+        //        storyboard.Completed += storyboard1_Completed;
+        //    }
+
+        //    DoubleAnimation animation;
+
+        //    canvas.Background = currentImage;
+        //    g_nextImage = nextImage;
+
+        //    animation = new DoubleAnimation
+        //    {
+        //        From = 1,
+        //        To = 0,
+        //        Duration = TimeSpan.FromMilliseconds(1000),
+        //        //RepeatBehavior = RepeatBehavior.Forever,
+        //        AutoReverse = false
+        //    };
+
+        //    Storyboard.SetTargetProperty(animation, new PropertyPath("Opacity"));
+        //    storyboard.Children.Add(animation);
+
+        //    canvas.BeginStoryboard(storyboard);
+
+        //    effectTimer.Start();
+        //}
+
+        //private ImageBrush g_nextImage;
+
+        //private void storyboard1_Completed(object sender, EventArgs e)
+        //{
+        //    Console.WriteLine("next!!!!!!!!!!!!!");
+        //    DoubleAnimation animation;
+
+        //    canvas.Background = g_nextImage;
+
+        //    animation = new DoubleAnimation
+        //    {
+        //        From = 0,
+        //        To = 1,
+        //        Duration = TimeSpan.FromMilliseconds(1000),
+        //        //RepeatBehavior = RepeatBehavior.Forever,
+        //        AutoReverse = false
+        //    };
+
+        //    Storyboard.SetTargetProperty(animation, new PropertyPath("Opacity"));
+        //    storyboard.Children.Add(animation);
+
+        //    canvas.BeginStoryboard(storyboard);
+        //}
+
+        private void canvasEffectSample(ImageBrush currentImage, ImageBrush nextImage)
+        {
+            if (storyboard == null)
+            {
+                storyboard = new Storyboard();
+                storyboard.Name = "Fading";
+            }
+
+            DoubleAnimation animation1;
+            DoubleAnimation animation2;
+
+            canvas.Background = currentImage;
+
+            animation1 = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(2000),
+                //RepeatBehavior = RepeatBehavior.Forever,
+                AutoReverse = false
+            };
+            animation2 = new DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromMilliseconds(2000),
+                //RepeatBehavior = RepeatBehavior.Forever,
+                AutoReverse = false
+            };
+
+            Storyboard.SetTargetProperty(animation1, new PropertyPath("Opacity"));
+            Storyboard.SetTargetProperty(animation2, new PropertyPath("Opacity"));
+            storyboard.Children.Add(animation1);
+
+            canvas.BeginStoryboard(storyboard);
+
+            effectTimer.Start();
         }
     }
 }

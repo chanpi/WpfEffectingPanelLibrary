@@ -17,9 +17,9 @@ namespace WpfEffectingPanelLibrary
     {
         public override void DrawEffectImage(BitmapSource current, BitmapSource next, EffectingPanel effectingPanel)
         {
-            ImageBrush imageBrush = new ImageBrush();
-            imageBrush.ImageSource = current;
-            effectingPanel.MyRectangle.Fill = imageBrush;
+            //ImageBrush imageBrush = new ImageBrush();
+            //imageBrush.ImageSource = current;
+            //effectingPanel.MyRectangle.Fill = imageBrush;
 
             //effectingPanel.Effect = null;
 
