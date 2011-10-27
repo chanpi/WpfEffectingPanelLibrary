@@ -53,8 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="WEPDefaultEffect.cs" />
-    <Compile Include="WEPBlurEffect.cs" />
-    <Compile Include="WEPDropShadowEffect.cs" />
     <Compile Include="WEPFadingEffect.cs" />
     <Compile Include="WEPImageCapture.cs" />
     <Compile Include="WEPWideStretchEffect.cs" />
@@ -90,7 +88,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="WateryEffect.fx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

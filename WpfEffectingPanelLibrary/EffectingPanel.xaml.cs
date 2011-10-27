@@ -1,23 +1,13 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
-using System.Windows.Threading;
 
 namespace WpfEffectingPanelLibrary
 {
@@ -26,7 +16,7 @@ namespace WpfEffectingPanelLibrary
     /// </summary>
     public partial class EffectingPanel : UserControl
     {
-        public enum EffectType { Fading, WideStretch, /*Blur, DropShadow, Emboss, OuterGlow,*/ Random, None };
+        public enum EffectType { Fading, WideStretch, Random, None };
 
         private WEPImageCapture imageCapture = null;
         private ArrayList effectList = null;
@@ -59,8 +49,6 @@ namespace WpfEffectingPanelLibrary
 
             effectList.Add(new WEPFadingEffect());
             effectList.Add(new WEPWideStretchEffect());
-            //effectList.Add(new WEPBlurEffect());
-            //effectList.Add(new WEPBlurEffect());
         }
 
         public void Transition(ref System.Windows.Forms.Panel current, ref System.Windows.Forms.Panel next)
@@ -80,9 +68,9 @@ namespace WpfEffectingPanelLibrary
             try
             {
                 // 現在のPanelの画像を取得
-                currentBitmapSource = GetBitmapSource(current, false);      // 遷移前Panelをキャプチャ
+                currentBitmapSource = GetBitmapSource(current, false);
 
-                // 次に表示数rPanleの画像を取得
+                // 次に表示するPanleの画像を取得
                 string nextBitmapPath = next.Name + ".bmp";
                 if (System.IO.File.Exists(nextBitmapPath))
                 {
@@ -136,6 +124,7 @@ namespace WpfEffectingPanelLibrary
                 nextImage = new ImageBrush(nextBitmapSource);
                 canvas.Width = current.Width;
                 canvas.Height = current.Height;
+                Console.WriteLine(canvas.Width.ToString() + " " + canvas.Height.ToString());
 
                 //this.Visibility = Visibility.Visible;                     // effectスタート
                 current.Visible = false;

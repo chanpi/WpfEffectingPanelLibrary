@@ -12,10 +12,6 @@ namespace WpfEffectingPanelLibrary
 {
     public class WEPImageCapture
     {
-        public WEPImageCapture()
-        {
-        }
-
         public Bitmap GetCapturedImage(Panel panel, string filePath, Boolean firstTime)
         {
             Rectangle rectangle;

@@ -40,14 +40,17 @@
             this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
             this.effectingPanel1 = new WpfEffectingPanelLibrary.EffectingPanel();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axShockwaveFlash1)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.panel1.Controls.Add(this.axWindowsMediaPlayer1);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.axShockwaveFlash1);
@@ -78,7 +81,7 @@
             // axShockwaveFlash1
             // 
             this.axShockwaveFlash1.Enabled = true;
-            this.axShockwaveFlash1.Location = new System.Drawing.Point(386, 131);
+            this.axShockwaveFlash1.Location = new System.Drawing.Point(501, 28);
             this.axShockwaveFlash1.Name = "axShockwaveFlash1";
             this.axShockwaveFlash1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axShockwaveFlash1.OcxState")));
             this.axShockwaveFlash1.Size = new System.Drawing.Size(192, 192);
@@ -126,6 +129,15 @@
             this.timer1.Interval = 4000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // axWindowsMediaPlayer1
+            // 
+            this.axWindowsMediaPlayer1.Enabled = true;
+            this.axWindowsMediaPlayer1.Location = new System.Drawing.Point(302, 238);
+            this.axWindowsMediaPlayer1.Name = "axWindowsMediaPlayer1";
+            this.axWindowsMediaPlayer1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axWindowsMediaPlayer1.OcxState")));
+            this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(391, 280);
+            this.axWindowsMediaPlayer1.TabIndex = 3;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -145,6 +157,7 @@
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axShockwaveFlash1)).EndInit();
             this.panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -161,6 +174,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.MonthCalendar monthCalendar1;
         private System.Windows.Forms.ListBox listBox1;
+        private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
 
     }
 }

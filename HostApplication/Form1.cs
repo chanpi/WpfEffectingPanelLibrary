@@ -21,6 +21,13 @@ namespace HostApplication
             InitializeComponent();
 
             panelList = new ArrayList();
+
+            axShockwaveFlash1.Movie = "http://home.att.ne.jp/lemon/cool/flash/WaterGate/black.swf";
+            axShockwaveFlash1.Play();
+
+            axWindowsMediaPlayer1.URL = "animals.wmv";
+            axWindowsMediaPlayer1.Ctlcontrols.play();
+
             panelList.Add(panel1);
             panelList.Add(panel2);
 
