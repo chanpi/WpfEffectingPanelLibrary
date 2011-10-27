@@ -26,16 +26,11 @@ namespace WpfEffectingPanelLibrary
     /// </summary>
     public partial class EffectingPanel : UserControl
     {
-        public enum EffectType { Blur, DropShadow, /*Emboss, OuterGlow,*/ Random, None };
+        public enum EffectType { Fading, WideStretch, /*Blur, DropShadow, Emboss, OuterGlow,*/ Random, None };
 
         private WEPImageCapture imageCapture = null;
         private ArrayList effectList = null;
         private Random random = null;
-
-        private Storyboard storyboard = null;
-        private DispatcherTimer effectTimer = null;
-
-        private System.Windows.Forms.Panel nextPanel = null;
 
         public EffectingPanel()
         {
@@ -47,30 +42,8 @@ namespace WpfEffectingPanelLibrary
             imageCapture = new WEPImageCapture();
             // エフェクト効果を行うクラスのインスタンスを生成
             CreateEffectInstances();
-            // エフェクトの時間を管理するタイマー
-            SetEffectTimer();
 
             random = new Random();
-        }
-
-        private void SetEffectTimer()
-        {
-            if (effectTimer == null)
-            {
-                effectTimer = new DispatcherTimer(DispatcherPriority.Normal);
-                effectTimer.Interval = new TimeSpan(0, 0, 2);
-                effectTimer.Tick += new EventHandler(effectTimer_Tick);
-            }
-        }
-
-        private void effectTimer_Tick(object sender, EventArgs e)
-        {
-            effectTimer.Stop();
-            if (nextPanel != null)
-            {
-                nextPanel.Visible = true;
-                nextPanel.Refresh();
-            }
         }
 
         private void CreateEffectInstances()
@@ -84,9 +57,10 @@ namespace WpfEffectingPanelLibrary
                 effectList = new ArrayList();
             }
 
-            // TODO!!!!!!!!!!!!!!!!!!!
-            effectList.Add(new WEPBlurEffect());
-            effectList.Add(new WEPBlurEffect());
+            effectList.Add(new WEPFadingEffect());
+            effectList.Add(new WEPWideStretchEffect());
+            //effectList.Add(new WEPBlurEffect());
+            //effectList.Add(new WEPBlurEffect());
         }
 
         public void Transition(ref System.Windows.Forms.Panel current, ref System.Windows.Forms.Panel next)
@@ -94,37 +68,53 @@ namespace WpfEffectingPanelLibrary
             Transition(ref current, ref next, EffectType.Random);
         }
 
-        // 1. Windows FormのPanelを受取り、Panelの画像をキャプチャしてBitmapオブジェクトを取得
-        // 2. BitmapオブジェクトをWPFで扱えるようにBitmapSourceオブジェクトに変換
-        // 3. BitmapSourceでエフェクトを実行
-        // 4. EffectingPanelをHiddenにする
         public void Transition(ref System.Windows.Forms.Panel current, ref System.Windows.Forms.Panel next, EffectType type)
         {
             BitmapSource currentBitmapSource = null;
             BitmapSource nextBitmapSource = null;
+            ImageBrush currentImage = null;
+            ImageBrush nextImage = null;
+
             WEPDefaultEffect effect = null;
 
             try
             {
+                // 現在のPanelの画像を取得
                 currentBitmapSource = GetBitmapSource(current, false);      // 遷移前Panelをキャプチャ
 
+                // 次に表示数rPanleの画像を取得
                 string nextBitmapPath = next.Name + ".bmp";
-
                 if (System.IO.File.Exists(nextBitmapPath))
                 {
-                    nextBitmapSource = new BitmapImage();                   // BitmapSource（abstruct）とBitmapImageは継承関係にある
-                    ((BitmapImage)nextBitmapSource).BeginInit();
-                    ((BitmapImage)nextBitmapSource).UriSource = new Uri(next.Name, UriKind.RelativeOrAbsolute);
-                    ((BitmapImage)nextBitmapSource).EndInit();
+                    System.Drawing.Imaging.BitmapData bitmapData = null;
+                    Bitmap nextBitmap = null;
+                    try
+                    {
+                        nextBitmap = new Bitmap(nextBitmapPath);
+                        bitmapData = nextBitmap.LockBits(
+                            new System.Drawing.Rectangle(0, 0, nextBitmap.Width, nextBitmap.Height),
+                            System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                            System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        nextBitmapSource = BitmapSource.Create(
+                            nextBitmap.Width, nextBitmap.Height, 96, 96, PixelFormats.Bgra32, null,
+                            bitmapData.Scan0, nextBitmap.Width * nextBitmap.Height * 4, bitmapData.Stride);
+                    }
+                    catch (SystemException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        if (bitmapData != null)
+                        {
+                            nextBitmap.UnlockBits(bitmapData);
+                        }
+                    }
                 }
                 else
                 {
                     nextBitmapSource = GetBitmapSource(next, true);         // 初回のみ
                 }
-
-                //this.Visibility = Visibility.Visible;                       // effectスタート
-                effectTimer.Start();
-                current.Visible = false;
 
                 if (type == EffectType.Random)
                 {
@@ -142,19 +132,15 @@ namespace WpfEffectingPanelLibrary
 
                 Console.WriteLine(type.ToString());
 
-                ImageBrush currentImage = new ImageBrush(currentBitmapSource);
-                ImageBrush nextImage = new ImageBrush(nextBitmapSource);
+                currentImage = new ImageBrush(currentBitmapSource);
+                nextImage = new ImageBrush(nextBitmapSource);
                 canvas.Width = current.Width;
                 canvas.Height = current.Height;
-                //canvas.Background = currentImage;
 
-                //effect.DrawEffectImage(currentBitmapSource, nextBitmapSource, this);
+                //this.Visibility = Visibility.Visible;                     // effectスタート
+                current.Visible = false;
 
-                nextPanel = next;
-                canvasEffectSample(currentImage, nextImage);
-
-                //next.Visible = true;
-                //next.Refresh();
+                effect.DrawEffectImage(currentImage, nextImage, ref next, ref canvas);
 
                 //this.Visibility = Visibility.Hidden;                        // effect終わり
 
@@ -191,104 +177,5 @@ namespace WpfEffectingPanelLibrary
             return bitmapSource;
         }
 
-        // TODO
-        private void canvas_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        //private void canvasEffectSample(ImageBrush currentImage, ImageBrush nextImage)
-        //{
-        //    if (storyboard == null)
-        //    {
-        //        storyboard = new Storyboard();
-        //        storyboard.Name = "Fading";
-        //        storyboard.Completed += storyboard1_Completed;
-        //    }
-
-        //    DoubleAnimation animation;
-
-        //    canvas.Background = currentImage;
-        //    g_nextImage = nextImage;
-
-        //    animation = new DoubleAnimation
-        //    {
-        //        From = 1,
-        //        To = 0,
-        //        Duration = TimeSpan.FromMilliseconds(1000),
-        //        //RepeatBehavior = RepeatBehavior.Forever,
-        //        AutoReverse = false
-        //    };
-
-        //    Storyboard.SetTargetProperty(animation, new PropertyPath("Opacity"));
-        //    storyboard.Children.Add(animation);
-
-        //    canvas.BeginStoryboard(storyboard);
-
-        //    effectTimer.Start();
-        //}
-
-        //private ImageBrush g_nextImage;
-
-        //private void storyboard1_Completed(object sender, EventArgs e)
-        //{
-        //    Console.WriteLine("next!!!!!!!!!!!!!");
-        //    DoubleAnimation animation;
-
-        //    canvas.Background = g_nextImage;
-
-        //    animation = new DoubleAnimation
-        //    {
-        //        From = 0,
-        //        To = 1,
-        //        Duration = TimeSpan.FromMilliseconds(1000),
-        //        //RepeatBehavior = RepeatBehavior.Forever,
-        //        AutoReverse = false
-        //    };
-
-        //    Storyboard.SetTargetProperty(animation, new PropertyPath("Opacity"));
-        //    storyboard.Children.Add(animation);
-
-        //    canvas.BeginStoryboard(storyboard);
-        //}
-
-        private void canvasEffectSample(ImageBrush currentImage, ImageBrush nextImage)
-        {
-            if (storyboard == null)
-            {
-                storyboard = new Storyboard();
-                storyboard.Name = "Fading";
-            }
-
-            DoubleAnimation animation1;
-            DoubleAnimation animation2;
-
-            canvas.Background = currentImage;
-
-            animation1 = new DoubleAnimation
-            {
-                From = 1,
-                To = 0,
-                Duration = TimeSpan.FromMilliseconds(2000),
-                //RepeatBehavior = RepeatBehavior.Forever,
-                AutoReverse = false
-            };
-            animation2 = new DoubleAnimation
-            {
-                From = 0,
-                To = 1,
-                Duration = TimeSpan.FromMilliseconds(2000),
-                //RepeatBehavior = RepeatBehavior.Forever,
-                AutoReverse = false
-            };
-
-            Storyboard.SetTargetProperty(animation1, new PropertyPath("Opacity"));
-            Storyboard.SetTargetProperty(animation2, new PropertyPath("Opacity"));
-            storyboard.Children.Add(animation1);
-
-            canvas.BeginStoryboard(storyboard);
-
-            effectTimer.Start();
-        }
     }
 }

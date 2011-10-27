@@ -6,16 +6,5 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
    
-    <Canvas Height="300" Width="300" Name="canvas" Loaded="canvas_Loaded" Background="#FFF7CCC8">
-        <Canvas.Resources>
-            <!--<ImageBrush x:Key="imageBrush" ImageSource="C://panel1.bmp" />-->
-        </Canvas.Resources>
-        
-    </Canvas>
-    <!--
-    <Grid>
-        <Image HorizontalAlignment="Left" Margin="0,0,0,0" Name="image1" Stretch="Fill" VerticalAlignment="Top">            
-        </Image>
-    </Grid>
-    -->
+    <Canvas Height="300" Width="300" Name="canvas" Background="Black" />
 </UserControl>

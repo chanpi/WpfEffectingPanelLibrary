@@ -47,7 +47,7 @@ namespace HostApplication
             //elementHost1.Visible = true;
             elementHost1.BringToFront();
             effectingPanel1.Transition(ref current, ref next);
-            //effectingPanel1.DrawEffectImage(current, next, WpfEffectingPanelLibrary.EffectingPanel.EffectType.Fading);
+            //effectingPanel1.Transition(ref current, ref next, WpfEffectingPanelLibrary.EffectingPanel.EffectType.WideStretch);
             elementHost1.SendToBack();
             //elementHost1.Visible = false;
         }

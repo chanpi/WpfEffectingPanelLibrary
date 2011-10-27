@@ -55,7 +55,9 @@
     <Compile Include="WEPDefaultEffect.cs" />
     <Compile Include="WEPBlurEffect.cs" />
     <Compile Include="WEPDropShadowEffect.cs" />
+    <Compile Include="WEPFadingEffect.cs" />
     <Compile Include="WEPImageCapture.cs" />
+    <Compile Include="WEPWideStretchEffect.cs" />
     <Page Include="EffectingPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
